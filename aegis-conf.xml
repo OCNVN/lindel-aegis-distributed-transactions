@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<application>
+    
+    <distributed-transaction id="post-ejemplo" master-replicas="3">
+        <workers-schedule>
+            <worker-schedule 
+                name="almacenar-postgres" 
+                schedule-order="0" 
+                parallelism="3" 
+                id-offset="0"
+                implementation-class-name="com.lindelit.transactions.test.AlmacenarPostgres"/>
+            <worker-schedule 
+                name="almacenar-redis" 
+                schedule-order="1" 
+                parallelism="3" 
+                id-offset="0"
+                implementation-class-name="com.lindelit.transactions.test.AlmacenarRedis"/>
+            <worker-schedule 
+                name="almacenar-elaticsearch" 
+                schedule-order="2" 
+                parallelism="3" 
+                id-offset="0"
+                implementation-class-name="com.lindelit.transactions.test.AlmacenarElasticsearch"/>
+        </workers-schedule>
+    </distributed-transaction>
+    
+    <distributed-transaction id="logeo" master-replicas="3">
+        <workers-schedule>
+            <worker-schedule 
+                name="logeo-postgres" 
+                schedule-order="0" 
+                parallelism="3" 
+                id-offset="0"
+                implementation-class-name="com.lindelit.transactions.test.LogeoPostgres"/>
+            <worker-schedule 
+                name="actualizar-mongodb" 
+                schedule-order="1" 
+                parallelism="3" 
+                id-offset="0"
+                implementation-class-name="com.lindelit.transactions.test.ActualizarMongodb"/>
+            <worker-schedule 
+                name="sesion-redis" 
+                schedule-order="2" 
+                parallelism="3" 
+                id-offset="0"
+                implementation-class-name="com.lindelit.transactions.test.SesionRedis"/>
+        </workers-schedule>
+    </distributed-transaction>
+    
+</application>
