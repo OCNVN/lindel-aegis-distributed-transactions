@@ -172,6 +172,7 @@ public class DistributedTransactionMaster implements Watcher{
         tasksCache = new Hashtable<>();
         statusNamespaceWorkersScheduleD = new Hashtable<>();
         orderWorkerScheduleD = new Hashtable<>();
+        transactionsCache = new Hashtable<>();
         
         // Armamos diccionar que relaciona el namespace de workerSchedule con
         // el objteto que contiene la configuracion para es workerSchedule
@@ -657,10 +658,7 @@ public class DistributedTransactionMaster implements Watcher{
      */
     
     // Cache con las transacciones disponibles
-    ChildrenCache transactionsCache;
-    
-    // Cache con las tareas disponibles por cada WorkerSchedule
-    Dictionary<DistributedTransactionsBuilder.WorkerScheduleConfiguration, ChildrenCache> tasksCache;
+    Dictionary<String, ChildrenCache> transactionsCache;
     
     /*
      * Obtener las transacciones pendientes
@@ -699,10 +697,12 @@ public class DistributedTransactionMaster implements Watcher{
     AsyncCallback.ChildrenCallback transactionsGetChildrenCallback = new AsyncCallback.ChildrenCallback() {
         @Override
         public void processResult(int rc, String path, Object ctx /* clientId */, List<String> children) {
+            String clientId = (String) ctx;
+            
             switch(KeeperException.Code.get(rc)){
             case CONNECTIONLOSS:
                 //String clientId = path.substring(path.lastIndexOf("/") + 1);
-                getClientTransactions((String) ctx);
+                getClientTransactions(clientId);
                 break;
             case OK:
                 log.info("[" + masterId + "] LISTA DE TRANSACCIONES OBTENIDA EN [" + path + "]: " + children.size());
@@ -714,12 +714,13 @@ public class DistributedTransactionMaster implements Watcher{
                 
                 // Obtener las nuevas transacciones agregadas al sistema
                 List<String> toProcess;
-                if(transactionsCache == null){
-                    transactionsCache = new ChildrenCache(children);
+                if(transactionsCache.get(clientId) == null){
+                    transactionsCache.put(clientId, new ChildrenCache(children));
+                    //transactionsCache = new ChildrenCache(children);
                     
                     toProcess = children;
                 } else {
-                    toProcess = transactionsCache.addedAndSet(children);
+                    toProcess = transactionsCache.get(clientId).addedAndSet(children);
                 }
                 
                 // Asignar las nuevas transacciones para q sean ejecutadas
@@ -927,6 +928,9 @@ public class DistributedTransactionMaster implements Watcher{
      * *******************************************************
      * *******************************************************
      */
+    
+    // Cache con las tareas disponibles por cada WorkerSchedule
+    Dictionary<DistributedTransactionsBuilder.WorkerScheduleConfiguration, ChildrenCache> tasksCache;
         
     /*
      * Obtener las tareas terminadas por workerSchedule
@@ -996,10 +1000,6 @@ public class DistributedTransactionMaster implements Watcher{
                     Integer currentScheduleIndex = orderWorkerScheduleD.get((DistributedTransactionsBuilder.WorkerScheduleConfiguration)ctx);
                     
                     if(workerScheduleOrder.size() - 1 > currentScheduleIndex){// Hay un siguiente Worker en el Schedule
-                        
-                        //DistributedTransactionsBuilder.WorkerScheduleConfiguration nextWsc = workerScheduleOrder.get(nextScheduleIndex);
-                        //DistributedTransactionsBuilder.WorkerScheduleConfiguration currentWsc = workerScheduleOrder.get(currentScheduleIndex);
-                        
                         assignTasks(toProcess, currentScheduleIndex);
                     }else if(workerScheduleOrder.size() == currentScheduleIndex){// No hay mas Workers en el schedule
                         // No hay mas workers en el schedule, el status de la tarea
@@ -1131,6 +1131,10 @@ public class DistributedTransactionMaster implements Watcher{
         }
     };
     
+    /*
+     * Eliminar el status del procesamiento de la tarea del worker una vez que ya
+     * a sido asignado al siguiente WorkerSchedule
+     */
     void deleteStatus(TaskAssignmentCtx taCtx){
         zkc.zk.delete(
                 DistributedTransactionWorker.WorkerZnodes.STATUS_NAMESPACE.getPath(taCtx.wsc, distributedTransactionConf) + "/" + taCtx.task,

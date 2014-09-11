@@ -28,7 +28,7 @@ public class PruebaClient1 {
         task.put("nombres", "carlos fernando");
         task.put("apellidos", "lucero alvarez");
         task.put("email", "nandolucero@hotmail.com");
-        task.put("prueba", "iniciamos");
+        task.put("prueba", "iniciamos carlos");
         
         return task;
     }
@@ -69,9 +69,9 @@ public class PruebaClient1 {
         JSONObject task = generateTask();
         log.debug("TAREA JSON: " + task.toJSONString());
         
-        submitAutomaticTransactions(5000, client, task);
+        submitAutomaticTransactions(1000, client, task);
         
-        Thread.sleep(250000);
+        Thread.sleep(150000);
         
         
         // Calculo de latencia

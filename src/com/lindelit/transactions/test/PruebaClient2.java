@@ -6,12 +6,11 @@ package com.lindelit.transactions.test;
 
 import com.lindelit.transactions.distributed.DistributedTransactionClient;
 import com.lindelit.transactions.distributed.DistributedTransactionsBuilder;
-import static com.lindelit.transactions.test.PruebaClient1.generateTask;
-import static com.lindelit.transactions.test.PruebaClient1.submitAutomaticTransactions;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.xml.DOMConfigurator;
 import org.jdom2.JDOMException;
@@ -34,15 +33,27 @@ public class PruebaClient2 {
         return task;
     }
     
+    public static void submitAutomaticTransactions(int ammount, DistributedTransactionClient client, JSONObject transaction){
+        for (int i = 0; i < ammount; i++) {
+            DistributedTransactionClient.TransactionObject transactionObject = new DistributedTransactionClient.TransactionObject();
+            client.submitTransaction("logeo", transaction.toJSONString(), transactionObject);
+            
+            try {
+                Thread.sleep(50);
+            } catch (InterruptedException ex) {
+                ex.printStackTrace();
+            }
+        }
+    }
+    
     public static void main(String[] args) throws JDOMException, IOException, InterruptedException{
         DOMConfigurator.configure("log4j.xml");
         
         // Creacion del builder
-        DistributedTransactionsBuilder builder = new DistributedTransactionsBuilder("aegis-conf-2.xml");
+        DistributedTransactionsBuilder builder = new DistributedTransactionsBuilder("aegis-conf.xml");
         // Correr transacciones distribuidas
-        builder.runDistributedTransactions();
+        // builder.runDistributedTransactions();
         
-        /*
         // Cliente de prueba
         DistributedTransactionsBuilder.DistributedTransactionConfiguration dtcLogeo = builder.getTransactionConfiguration("logeo");
         DistributedTransactionsBuilder.DistributedTransactionConfiguration dtcEjemplo = builder.getTransactionConfiguration("post-ejemplo");
@@ -58,9 +69,9 @@ public class PruebaClient2 {
         JSONObject task = generateTask();
         log.debug("TAREA JSON: " + task.toJSONString());
         
-        PruebaClient1.submitAutomaticTransactions(10, client, task);
+        submitAutomaticTransactions(1000, client, task);
         
-        Thread.sleep(31000);
+        Thread.sleep(150000);
         
         
         // Calculo de latencia
@@ -88,7 +99,7 @@ public class PruebaClient2 {
         long latenciaPromedio = sumaLatencias / transacciones.size();
         log.info("LATENCIA PROMEDIO : " + latenciaPromedio);
         log.info("LATENCIA MINIMA   : " + latenciaMinima);
-        log.info("LATENCIA MAXIMA   : " + latenciaMaxima);*/
+        log.info("LATENCIA MAXIMA   : " + latenciaMaxima);
         
         Thread.sleep(600000);
     }
