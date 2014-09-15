@@ -39,7 +39,7 @@ public class PruebaClient1 {
             client.submitTransaction("logeo", transaction.toJSONString(), transactionObject);
             
             try {
-                Thread.sleep(50);
+                Thread.sleep(100);
             } catch (InterruptedException ex) {
                 ex.printStackTrace();
             }

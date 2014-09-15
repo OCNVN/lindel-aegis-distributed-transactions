@@ -6,20 +6,20 @@
             <worker-schedule 
                 name="almacenar-postgres" 
                 schedule-order="0" 
-                parallelism="3" 
-                id-offset="3"
+                parallelism="8" 
+                id-offset="8"
                 implementation-class-name="com.lindelit.transactions.test.AlmacenarPostgres"/>
             <worker-schedule 
                 name="almacenar-redis" 
                 schedule-order="1" 
-                parallelism="3" 
-                id-offset="3"
+                parallelism="8" 
+                id-offset="8"
                 implementation-class-name="com.lindelit.transactions.test.AlmacenarRedis"/>
             <worker-schedule 
                 name="almacenar-elaticsearch" 
                 schedule-order="2" 
-                parallelism="3" 
-                id-offset="3"
+                parallelism="8" 
+                id-offset="8"
                 implementation-class-name="com.lindelit.transactions.test.AlmacenarElasticsearch"/>
         </workers-schedule>
     </distributed-transaction>
@@ -29,20 +29,20 @@
             <worker-schedule 
                 name="logeo-postgres" 
                 schedule-order="0" 
-                parallelism="3" 
-                id-offset="3"
+                parallelism="8" 
+                id-offset="8"
                 implementation-class-name="com.lindelit.transactions.test.LogeoPostgres"/>
             <worker-schedule 
                 name="actualizar-mongodb" 
                 schedule-order="1" 
-                parallelism="3" 
-                id-offset="3"
+                parallelism="8" 
+                id-offset="8"
                 implementation-class-name="com.lindelit.transactions.test.ActualizarMongodb"/>
             <worker-schedule 
                 name="sesion-redis" 
                 schedule-order="2" 
-                parallelism="3" 
-                id-offset="3"
+                parallelism="8"
+                id-offset="8"
                 implementation-class-name="com.lindelit.transactions.test.SesionRedis"/>
         </workers-schedule>
     </distributed-transaction>

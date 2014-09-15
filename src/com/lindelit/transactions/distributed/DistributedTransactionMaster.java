@@ -57,13 +57,13 @@ public class DistributedTransactionMaster implements Watcher{
     private TransaccionMasterStates state = TransaccionMasterStates.RUNNING;
     
     // Conexion a zookeeper
-    com.lindelit.coordinator.ZKConexion zkc;
+    ZKConexion zkc;
     
     // Generar numeros aleatorios
     private Random random = new Random();
 
     public void init() {
-        zkc = new com.lindelit.coordinator.ZKConexion();
+        zkc = new ZKConexion();
         try {
             zkc.connect(this);
             
@@ -1223,9 +1223,9 @@ public class DistributedTransactionMaster implements Watcher{
                 getClients();
                 break;
             case OK:
-                log.info("[" + masterId + "] LISTA CLIENTES OBTENIDA: " + children.size());
-                /*for (String child : children) 
-                    log.debug("[" + masterId + "] TASK: " + child);*/
+                log.info("[" + masterId + "] LISTA CLIENTES OBTENIDA: " + children.size() + " en: " + path);
+                for (String child : children) 
+                    log.debug("[" + masterId + "] CLIENTE: " + child);
                 
                 // Hubo un cambio en la lista de clientes
                 // Obtener los nuevos clientes
@@ -1241,7 +1241,7 @@ public class DistributedTransactionMaster implements Watcher{
                 // Escuchar transacciones agregadas por cada cliente
                 if(toProcess != null){
                     getTransactions(toProcess);
-                    for(String child: children)
+                    for(String child: toProcess)
                         log.debug("[" + masterId + "] ESCUCHAR TRANSACCIONES PARA EL CLIENTE: " + child);
                 }
                 

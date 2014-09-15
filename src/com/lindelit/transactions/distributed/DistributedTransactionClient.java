@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Dictionary;
-import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
@@ -41,10 +40,10 @@ public class DistributedTransactionClient implements Watcher{
     private Dictionary<String, DistributedTransactionsBuilder.DistributedTransactionConfiguration> distributedTransactionsDictionary;
     
     // Conexion a zookeeper
-    com.lindelit.coordinator.ZKConexion zkc;
+    ZKConexion zkc;
 
     public void init() {
-        zkc = new com.lindelit.coordinator.ZKConexion();
+        zkc = new ZKConexion();
         try {
             zkc.connect(this);
             
@@ -166,6 +165,7 @@ public class DistributedTransactionClient implements Watcher{
     
     // Diccionario Path del znode del resultado de transaccion => TransactionObject
     public ConcurrentHashMap<String, Object> ctxMap = new ConcurrentHashMap<String, Object>();
+    // Solo una copia con todas las transacciones para saber los tiempos
     public ConcurrentHashMap<String, TransactionObject> ctxMapCopy = new ConcurrentHashMap<String, TransactionObject>();
     
     /*
@@ -372,7 +372,7 @@ public class DistributedTransactionClient implements Watcher{
                 try{
                     zkc.zk.create(
                         ClientZnodes.TRANSACTION_CLIENT_ZNODE.getPath(clientId, dtc), 
-                        "Root namespace".getBytes(), 
+                        "Registro de cliente".getBytes(), 
                         ZooDefs.Ids.OPEN_ACL_UNSAFE, 
                         CreateMode.PERSISTENT);
                 }catch (KeeperException | InterruptedException ex){}
@@ -380,7 +380,7 @@ public class DistributedTransactionClient implements Watcher{
                 try{
                     zkc.zk.create(
                         ClientZnodes.RESULTS_NAMESPACES.getPath(clientId, dtc), 
-                        "Root namespace".getBytes(), 
+                        "Namespace de resultados".getBytes(), 
                         ZooDefs.Ids.OPEN_ACL_UNSAFE, 
                         CreateMode.PERSISTENT);
                 }catch (KeeperException | InterruptedException ex){}
@@ -388,7 +388,7 @@ public class DistributedTransactionClient implements Watcher{
                 try{
                     zkc.zk.create(
                         ClientZnodes.TRANSACTIONS_NAMESPACES.getPath(clientId, dtc), 
-                        "Root namespace".getBytes(), 
+                        "Namespace de transacciones".getBytes(), 
                         ZooDefs.Ids.OPEN_ACL_UNSAFE, 
                         CreateMode.PERSISTENT);
                 }catch (KeeperException | InterruptedException ex){}

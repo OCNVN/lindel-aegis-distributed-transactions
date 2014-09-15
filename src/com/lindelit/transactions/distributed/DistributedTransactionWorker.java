@@ -41,7 +41,7 @@ public class DistributedTransactionWorker implements Watcher{
     DistributedTransactionsBuilder.DistributedTransactionConfiguration distributedTransactionConfiguration;
     
     // Conexion a Zookeeper
-    com.lindelit.coordinator.ZKConexion zkc;
+    ZKConexion zkc;
     
     /*
      * Para no bloquear el thread callback del cliente Zookeeper, usamos 
@@ -50,7 +50,7 @@ public class DistributedTransactionWorker implements Watcher{
     private ThreadPoolExecutor executor;
 
     public void init() {
-        zkc = new com.lindelit.coordinator.ZKConexion();
+        zkc = new ZKConexion();
         try {
             zkc.connect(this);
             

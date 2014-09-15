@@ -18,10 +18,10 @@ import org.apache.zookeeper.ZooDefs;
 public class Bootstrap implements Watcher{
     private final static org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(Bootstrap.class);
     
-    com.lindelit.coordinator.ZKConexion zkc;
+    ZKConexion zkc;
 
     public void init() {
-        zkc = new com.lindelit.coordinator.ZKConexion();
+        zkc = new ZKConexion();
         try {
             zkc.connect(this);
         } catch (IOException | InterruptedException e) {
