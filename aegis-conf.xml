@@ -8,19 +8,29 @@
                 schedule-order="0" 
                 parallelism="8" 
                 id-offset="0"
-                implementation-class-name="com.lindelit.transactions.test.AlmacenarPostgres"/>
+                external="false"
+                implementation-class-name="com.lindelit.xatransactions.test.AlmacenarPostgres"/>
             <worker-schedule 
                 name="almacenar-redis" 
                 schedule-order="1" 
                 parallelism="8" 
                 id-offset="0"
-                implementation-class-name="com.lindelit.transactions.test.AlmacenarRedis"/>
+                external="false"
+                implementation-class-name="com.lindelit.xatransactions.test.AlmacenarRedis"/>
             <worker-schedule 
-                name="almacenar-elaticsearch" 
-                schedule-order="2" 
+                name="worker-nodejs" 
+                schedule-order="2"
                 parallelism="8" 
                 id-offset="0"
-                implementation-class-name="com.lindelit.transactions.test.AlmacenarElasticsearch"/>
+                external="true"
+                implementation-class-name=""/>
+            <worker-schedule 
+                name="almacenar-elaticsearch" 
+                schedule-order="3" 
+                parallelism="8" 
+                id-offset="0"
+                external="false"
+                implementation-class-name="com.lindelit.xatransactions.test.AlmacenarElasticsearch"/>
         </workers-schedule>
     </distributed-transaction>
     
@@ -31,19 +41,29 @@
                 schedule-order="0" 
                 parallelism="8" 
                 id-offset="0"
-                implementation-class-name="com.lindelit.transactions.test.LogeoPostgres"/>
+                external="false"
+                implementation-class-name="com.lindelit.xatransactions.test.LogeoPostgres"/>
             <worker-schedule 
                 name="actualizar-mongodb" 
                 schedule-order="1" 
                 parallelism="8" 
                 id-offset="0"
-                implementation-class-name="com.lindelit.transactions.test.ActualizarMongodb"/>
+                external="false"
+                implementation-class-name="com.lindelit.xatransactions.test.ActualizarMongodb"/>
             <worker-schedule 
                 name="sesion-redis" 
                 schedule-order="2" 
                 parallelism="8" 
                 id-offset="0"
-                implementation-class-name="com.lindelit.transactions.test.SesionRedis"/>
+                external="false"
+                implementation-class-name="com.lindelit.xatransactions.test.SesionRedis"/>
+            <!--<worker-schedule 
+                name="worker-nodejs" 
+                schedule-order="3"
+                parallelism="8" 
+                id-offset="0"
+                external="true"
+                implementation-class-name=""/>-->
         </workers-schedule>
     </distributed-transaction>
     

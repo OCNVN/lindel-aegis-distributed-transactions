@@ -1,21 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project-private xmlns="http://www.netbeans.org/ns/project-private/1">
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
-    <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/1">
-        <file>file:/Users/carloslucero/NetBeansProjects/AegisDistributedTransactions/src/com/lindelit/transactions/distributed/DistributedTransactionClient.java</file>
-        <file>file:/Users/carloslucero/NetBeansProjects/AegisDistributedTransactions/src/com/lindelit/transactions/distributed/DistributedTransactionWorker.java</file>
-        <file>file:/Users/carloslucero/NetBeansProjects/AegisDistributedTransactions/src/com/lindelit/transactions/distributed/DistributedTransactionMaster.java</file>
-        <file>file:/Users/carloslucero/NetBeansProjects/AegisDistributedTransactions/src/com/lindelit/transactions/test/PruebaClient1.java</file>
-        <file>file:/Users/carloslucero/NetBeansProjects/AegisDistributedTransactions/src/com/lindelit/transactions/test/PruebaMasterWorkers2.java</file>
-        <file>file:/Users/carloslucero/NetBeansProjects/AegisDistributedTransactions/src/com/lindelit/transactions/distributed/DistributedTransaction.java</file>
-        <file>file:/Users/carloslucero/NetBeansProjects/AegisDistributedTransactions/src/com/lindelit/transactions/distributed/ADTUtils.java</file>
-        <file>file:/Users/carloslucero/NetBeansProjects/AegisDistributedTransactions/log4j.xml</file>
-        <file>file:/Users/carloslucero/NetBeansProjects/AegisDistributedTransactions/src/com/lindelit/transactions/test/AlmacenarElasticsearch.java</file>
-        <file>file:/Users/carloslucero/NetBeansProjects/AegisDistributedTransactions/aegis-conf.xml</file>
-        <file>file:/Users/carloslucero/NetBeansProjects/AegisDistributedTransactions/aegis-conf-2.xml</file>
-        <file>file:/Users/carloslucero/NetBeansProjects/AegisDistributedTransactions/src/com/lindelit/transactions/test/PruebaMasterWorkers.java</file>
-        <file>file:/Users/carloslucero/NetBeansProjects/AegisDistributedTransactions/src/com/lindelit/transactions/distributed/ChildrenCache.java</file>
-        <file>file:/Users/carloslucero/NetBeansProjects/AegisDistributedTransactions/src/com/lindelit/transactions/distributed/AbstractDistributedTransactionExecutable.java</file>
-        <file>file:/Users/carloslucero/NetBeansProjects/AegisDistributedTransactions/src/com/lindelit/transactions/test/PruebaClient2.java</file>
-    </open-files>
 </project-private>

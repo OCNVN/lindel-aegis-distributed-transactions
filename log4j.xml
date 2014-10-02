@@ -16,11 +16,11 @@
         <priority value="TRACE" />
     </category> -->
     
-    <category name="com.lindelit.transactions.distributed">
+    <category name="com.lindelit.xatransactions">
         <priority value="DEBUG" />
     </category>
     
-    <category name="com.lindelit.transactions.test">
+    <category name="com.lindelit.xatransactions.test">
         <priority value="DEBUG" />
     </category>
 
