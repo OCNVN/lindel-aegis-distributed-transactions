@@ -339,7 +339,8 @@ public class XATransactionResource implements Watcher{
                                 
                             }
                             
-                            // Si no soy el ultimo worker, debe crar status
+                            // Si no soy el ultimo worker, debe crar status para que master 
+                            // envie el resultado para ser procesado por el siguiente worker
                             if(!workerScheduleConf.isLast()){
                                 // Crea un znode para notificar la ejecucion de la tarea
                                 zkc.zk.create(
@@ -442,7 +443,7 @@ public class XATransactionResource implements Watcher{
             try{
                 zkc.zk.create(
                     WorkerZnodes.WORKER_NAMESPACE.getPath(wsc, dtc), 
-                    "Root namespace".getBytes(), 
+                    "Worker namespace".getBytes(), 
                     ZooDefs.Ids.OPEN_ACL_UNSAFE, 
                     CreateMode.PERSISTENT);
             }catch (KeeperException | InterruptedException ex){}
@@ -450,7 +451,7 @@ public class XATransactionResource implements Watcher{
             try{
                 zkc.zk.create(
                     WorkerZnodes.ASSIGN_NAMESPACE.getPath(wsc, dtc), 
-                    "Root namespace".getBytes(), 
+                    "Assign namespace".getBytes(), 
                     ZooDefs.Ids.OPEN_ACL_UNSAFE, 
                     CreateMode.PERSISTENT);
             }catch (KeeperException | InterruptedException ex){}
@@ -458,7 +459,7 @@ public class XATransactionResource implements Watcher{
             try{
                 zkc.zk.create(
                     WorkerZnodes.STATUS_NAMESPACE.getPath(wsc, dtc), 
-                    "Root namespace".getBytes(), 
+                    "Status namespace".getBytes(), 
                     ZooDefs.Ids.OPEN_ACL_UNSAFE, 
                     CreateMode.PERSISTENT);
             }catch (KeeperException | InterruptedException ex){}
