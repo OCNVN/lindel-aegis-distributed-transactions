@@ -6,8 +6,8 @@ package com.lindelit.xatransactions.test;
 
 import com.lindelit.xatransactions.XATransactionsBuilder;
 import java.io.IOException;
-import org.apache.log4j.Logger;
-import org.apache.log4j.xml.DOMConfigurator;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jdom2.JDOMException;
 
 /**
@@ -15,11 +15,10 @@ import org.jdom2.JDOMException;
  * @author carloslucero
  */
 public class PruebaXATransaction1 {
-    private final static Logger log = Logger.getLogger(PruebaXATransaction1.class);
+    static {System.setProperty("log4j.configurationFile", "log4j2.xml");}
+    static final Logger logger = LogManager.getLogger(PruebaXATransaction1.class.getName());
     
-    public static void main(String[] args) throws JDOMException, IOException, InterruptedException{
-        DOMConfigurator.configure("log4j.xml");
-        
+    public static void main(String[] args) throws JDOMException, IOException, InterruptedException{        
         // Creacion del builder
         XATransactionsBuilder builder = new XATransactionsBuilder("aegis-conf.xml");
         // Correr transacciones distribuidas
