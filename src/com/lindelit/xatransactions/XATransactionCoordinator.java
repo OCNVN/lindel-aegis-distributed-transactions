@@ -781,10 +781,13 @@ public class XATransactionCoordinator implements Watcher{
             case OK:
                 try {
                     // Agregar metadatos de asignacion a los datos
-                    data = addAssignMetadata(data, (String) ctx);
-                    log.debug("ASIGNACION DATA METADATOS: " + new String(data) + ", PATH: " + path);
+                    data = addAssignMetadata(data, (String) ctx /* clientId */);
+                    
+                    // Agregar nodo de status a los datos
+                    data = addTransactionStatus(data);
+                    log.debug("ASIGNACION DATA METADATOS/STATUS: " + new String(data) + ", PATH: " + path);
                 } catch (ParseException ex) {
-                    ex.printStackTrace();
+                    log.error("Error al agregar Metadatos/Status al data de transaccion: " + ex.getMessage());
                 }
                 
                 // Debe haber almenos 1 worker del cual elegir
@@ -831,6 +834,9 @@ public class XATransactionCoordinator implements Watcher{
         }
     }
     
+    /*
+     * Agrega metadatos de transaccion al data de la transaccion
+     */
     protected byte[] addAssignMetadata(byte[] data, String clientId) throws ParseException{
         JSONParser parser=new JSONParser();
 
@@ -842,6 +848,25 @@ public class XATransactionCoordinator implements Watcher{
         metaJsonChild.put(XATransactionUtils.AssignMetadataNodes.CLIENT_ID_CHILD.getNode(), clientId);
         
         dataJson.put(XATransactionUtils.AssignMetadataNodes.XA_ASSIGN_METADATA_NODE.getNode(), metaJsonChild);
+        
+        return dataJson.toJSONString().getBytes();
+    }
+    
+    /*
+     * Agrega Status de transaccion sin valores al data de la transaccion
+     */
+    protected byte[] addTransactionStatus(byte[] data) throws ParseException{
+        JSONParser parser=new JSONParser();
+        
+        String dataString = new String(data);
+        Object dataObject = parser.parse(dataString);
+        JSONObject dataJson = (JSONObject) dataObject;
+        
+        JSONObject statusJsonChild = new JSONObject();
+        statusJsonChild.put(XATransactionUtils.TransactionStatusNodes.STATUS_CHILD.getNode(), "");
+        statusJsonChild.put(XATransactionUtils.TransactionStatusNodes.MESSAGE_CHILD.getNode(), "");
+        
+        dataJson.put(XATransactionUtils.TransactionStatusNodes.XA_STATUS_NODE.getNode(), statusJsonChild);
         
         return dataJson.toJSONString().getBytes();
     }

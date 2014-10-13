@@ -52,4 +52,22 @@ public class XATransactionUtils {
             return node;
         }
     }
+    
+    public enum TransactionStatusNodes {
+        XA_STATUS_NODE ("XA-TRANSACTION-STATUS"),
+        STATUS_CHILD ("status"),
+        MESSAGE_CHILD ("message"),
+        
+        // Valores que puede tomar el child status
+        STATUS_SUCCESS_VALUE_NODE ("success"),
+        STATUS_ERROR_VALUE_NODE ("error");
+        
+        private final String node;
+        TransactionStatusNodes(String node){
+            this.node = node;
+        }
+        public String getNode(){
+            return node;
+        }
+    }
 }
