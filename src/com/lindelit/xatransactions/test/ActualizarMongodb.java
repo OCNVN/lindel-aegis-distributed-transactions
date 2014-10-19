@@ -5,10 +5,8 @@
 package com.lindelit.xatransactions.test;
 
 import com.lindelit.xatransactions.AbstractXATransactionExecutable;
-import java.util.logging.Level;
 import org.apache.log4j.Logger;
 import org.json.simple.JSONObject;
-import org.json.simple.parser.ParseException;
 
 /**
  *
@@ -18,33 +16,27 @@ public class ActualizarMongodb extends AbstractXATransactionExecutable{
     private final static Logger log = Logger.getLogger(ActualizarMongodb.class);
     
     @Override
-    public byte[] execute(byte[] data) {
-        JSONObject dataJson = new JSONObject();
+    public JSONObject execute(JSONObject dataJson) throws Exception {
+        String valorPrueba = dataJson.get("prueba").toString();
+        dataJson.put("prueba", valorPrueba + "->actualizar mongodb");
         
-        try {
-            dataJson = parseData();
-            String valorPrueba = dataJson.get("prueba").toString();
-            
-            dataJson.put("prueba", valorPrueba + "->actualizar mongodb");
-        } catch (ParseException ex) {
-            ex.printStackTrace();
-        }
+        //if("prueba".compareTo("prueba") == 0)
+        //    throw new Exception("Se jodio pex");
         
-        return dataJson.toJSONString().getBytes();
+        return dataJson;
     }
 
     @Override
-    public byte[] rollback(byte[] data) {
+    public JSONObject rollback(JSONObject dataJson) {
         log.debug("DICE QUE HAGA ROLLBACK DE ALGO!");
         
-        return data;
+        return dataJson;
     }
 
     @Override
-    public byte[] validate(byte[] data) {
+    public JSONObject validate(JSONObject dataJson) {
         log.debug("DICE QUE HAGA VALIDATE DE ALGO!");
         
-        return data;
+        return dataJson;
     }
-    
 }

@@ -54,10 +54,8 @@ public class PruebaXATransactionClient2 {
         
         // Cliente de prueba
         XATransactionsBuilder.DistributedTransactionConfiguration dtcLogeo = builder.getTransactionConfiguration("logeo");
-        XATransactionsBuilder.DistributedTransactionConfiguration dtcEjemplo = builder.getTransactionConfiguration("post-ejemplo");
         
         ArrayList<XATransactionsBuilder.DistributedTransactionConfiguration> dtcs = new ArrayList<>();
-        dtcs.add(dtcEjemplo);
         dtcs.add(dtcLogeo);
         XATransactionClient client = new XATransactionClient("cliente-2", dtcs);
         
@@ -67,7 +65,7 @@ public class PruebaXATransactionClient2 {
         JSONObject task = generateTask();
         log.debug("TAREA JSON: " + task.toJSONString());
         
-        submitAutomaticTransactions(1000, client, task);
+        submitAutomaticTransactions(100, client, task);
         
         Thread.sleep(150000);
         

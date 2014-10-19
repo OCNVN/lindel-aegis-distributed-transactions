@@ -97,7 +97,15 @@ public class Bootstrap implements Watcher{
         try{
             zkc.zk.create(
                 ApplicationZnodes.TRANSACTION_CLIENT_NAMESPACE.getPath(), 
-                "Root clients namespace".getBytes(), 
+                "Transaction client namespace".getBytes(), 
+                ZooDefs.Ids.OPEN_ACL_UNSAFE, 
+                CreateMode.PERSISTENT);
+        }catch (KeeperException | InterruptedException ex){}
+        
+        try{
+            zkc.zk.create(
+                ApplicationZnodes.ROLLBACK_NAMESPACE.getPath(), 
+                "Rollback data namespace".getBytes(), 
                 ZooDefs.Ids.OPEN_ACL_UNSAFE, 
                 CreateMode.PERSISTENT);
         }catch (KeeperException | InterruptedException ex){}
@@ -120,6 +128,7 @@ public class Bootstrap implements Watcher{
         WORKERS_NAMESPACE   (APP_NAMESPACE.getPath() + "/workers"), 
         ASSIGNS_NAMESPACE   (APP_NAMESPACE.getPath() + "/assigns"),
         STATUS_NAMESPACE   (APP_NAMESPACE.getPath() + "/status"),
+        ROLLBACK_NAMESPACE   (APP_NAMESPACE.getPath() + "/rollback"),
         MASTERS_NAMESPACE   (APP_NAMESPACE.getPath() + "/masters");
 
         private final String path;

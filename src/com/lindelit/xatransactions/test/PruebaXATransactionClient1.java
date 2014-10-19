@@ -67,7 +67,7 @@ public class PruebaXATransactionClient1 {
         JSONObject task = generateTask();
         log.debug("TAREA JSON: " + task.toJSONString());
         
-        submitAutomaticTransactions(1, client, task);
+        submitAutomaticTransactions(100, client, task);
         
         Thread.sleep(150000);
         

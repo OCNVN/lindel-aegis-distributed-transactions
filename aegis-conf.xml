@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <application>
-    
+    <!-- 
     <distributed-transaction id="post-ejemplo" master-replicas="3">
+        
         <workers-schedule>
             <worker-schedule 
                 name="almacenar-postgres" 
@@ -32,7 +33,9 @@
                 external="false"
                 implementation-class-name="com.lindelit.xatransactions.test.AlmacenarElasticsearch"/>
         </workers-schedule>
+       
     </distributed-transaction>
+    -->
     
     <distributed-transaction id="logeo" master-replicas="3">
         <workers-schedule>

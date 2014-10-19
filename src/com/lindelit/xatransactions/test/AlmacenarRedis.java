@@ -17,33 +17,25 @@ public class AlmacenarRedis extends AbstractXATransactionExecutable{
     private final static Logger log = Logger.getLogger(AlmacenarRedis.class);
     
     @Override
-    public byte[] execute(byte[] data) {
-        JSONObject dataJson = new JSONObject();
-        
-        try {
-            dataJson = parseData();
-            String valorPrueba = dataJson.get("prueba").toString();
+    public JSONObject execute(JSONObject dataJson) {
+        String valorPrueba = dataJson.get("prueba").toString();
+        dataJson.put("prueba", valorPrueba + "->almacenar redis");
             
-            dataJson.put("prueba", valorPrueba + "->almacenar redis");
-        } catch (ParseException ex) {
-            ex.printStackTrace();
-        }
-        
-        return dataJson.toJSONString().getBytes();
+        return dataJson;
     }
 
     @Override
-    public byte[] rollback(byte[] data) {
+    public JSONObject rollback(JSONObject dataJson) {
         log.debug("DICE QUE HAGA ROLLBACK DE ALGO!");
         
-        return data;
+        return dataJson;
     }
 
     @Override
-    public byte[] validate(byte[] data) {
+    public JSONObject validate(JSONObject dataJson) {
         log.debug("DICE QUE HAGA VALIDATE DE ALGO!");
         
-        return data;
+        return dataJson;
     }
     
 }

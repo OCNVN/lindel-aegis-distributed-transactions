@@ -95,6 +95,16 @@ public class XATransactionResource implements Watcher{
                 
                 return path;
             }
+        },
+        
+        ROLLBACK_NAMESPACE {
+            public String getPath(XATransactionsBuilder.WorkerScheduleConfiguration ws, XATransactionsBuilder.DistributedTransactionConfiguration dtc){
+                String path = TransactionZnodes.ROLLBACK_NAMESPACE.getPath(dtc) + 
+                    "/" +
+                    ws.getName();
+                
+                return path;
+            }
         };
         
 
@@ -312,6 +322,9 @@ public class XATransactionResource implements Watcher{
                         
                         // Objeto que ejecuta la logica del worker, es cargado dinamicamente
                         AbstractXATransactionExecutable distributedTransactionExecutable = null;
+                        
+                        Boolean flagEjecucionExitosa = false;
+                        String errorMsg = "";
                         try {
                             Object object = Class.forName(workerScheduleConf.getImplementationClassName()).newInstance(); 
                             distributedTransactionExecutable = (AbstractXATransactionExecutable) object;
@@ -319,52 +332,55 @@ public class XATransactionResource implements Watcher{
                             // Data para la ejecucion de la tarea
                             distributedTransactionExecutable.setData(data);
                             // Ejecucion de la tarea, logica del usuario
-                            byte[] result = distributedTransactionExecutable.execute(data);
+                            distributedTransactionExecutable.runExecute();
                             
-                            // Si soy el ultimo worker en el schedule, la transaccion fue exitosa
-                            // notificar al cliente el resultado
-                            if(workerScheduleConf.isLast()){
-                                // Metadata 
-                                JSONObject metadata = (JSONObject) distributedTransactionExecutable.parseData().get(XATransactionUtils.AssignMetadataNodes.XA_ASSIGN_METADATA_NODE.getNode());
-                                String clientId = metadata.get(XATransactionUtils.AssignMetadataNodes.CLIENT_ID_CHILD.getNode()).toString();
-                                
-                                // Crea un znode para notificar resultado de la transaccion al cliente
-                                zkc.zk.create(
-                                        XATransactionClient.ClientZnodes.RESULTS_NAMESPACES.getPath(clientId, distributedTransactionConfiguration)+"/" + (String) ctx, 
-                                        result, 
-                                        ZooDefs.Ids.OPEN_ACL_UNSAFE, 
-                                        CreateMode.PERSISTENT, 
-                                        taskStatusCreateCallback, 
-                                        result /* Resultado de la tarea actual */);
-                                
-                            }
-                            
-                            // Si no soy el ultimo worker, debe crar status para que master 
-                            // envie el resultado para ser procesado por el siguiente worker
-                            if(!workerScheduleConf.isLast()){
-                                // Crea un znode para notificar la ejecucion de la tarea
-                                zkc.zk.create(
-                                        WorkerZnodes.STATUS_NAMESPACE.getPath(workerScheduleConf, distributedTransactionConfiguration)+"/" + (String) ctx, 
-                                        result, 
-                                        ZooDefs.Ids.OPEN_ACL_UNSAFE, 
-                                        CreateMode.PERSISTENT, 
-                                        taskStatusCreateCallback, 
-                                        result /* Resultado de la tarea actual */);
-                            }
-                            
-                            // Eliminar asignacion
-                            zkc.zk.delete(
-                                    WorkerZnodes.ASSIGN_NAMESPACE.getPath(workerScheduleConf, distributedTransactionConfiguration) + "/"  + workerId + "/" + (String) ctx, 
-                                    -1, 
-                                    taskVoidCallback, 
-                                    null);
-
+                            flagEjecucionExitosa = true;
                         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException ex) {
                             ex.printStackTrace();
-                        } catch (ParseException ex) {
-                            ex.printStackTrace();
+                        } catch (Exception ex){
+                            log.error("Error de ejecucion de tarea: " + ex.getMessage());
+                            
+                            errorMsg = ex.getMessage().toString();
+                            log.debug("");
+                            flagEjecucionExitosa = false;
                         }
                         
+                        byte[] result = null;
+                        JSONObject metadata = null;
+                        try{
+                            if(flagEjecucionExitosa){
+                                // Si la ejecucion es satisfactoria agregar status Success
+                                distributedTransactionExecutable.setSuccessStatus();
+                            }else{
+                                // Si fallo la ejecucion agregar status Error
+                                distributedTransactionExecutable.setErrorStatus(errorMsg);
+                            }
+                            
+                            // Resultado
+                            result = distributedTransactionExecutable.getData();
+                            // Metadata 
+                            // metadata = distributedTransactionExecutable.getMetadata();
+                        } catch(ParseException ex){
+                            ex.printStackTrace();
+                        }   
+                        
+                        // Crea un znode para notificar la ejecucion de la tarea
+                        // y ser procesado por el siguiente worker
+                        zkc.zk.create(
+                                WorkerZnodes.STATUS_NAMESPACE.getPath(workerScheduleConf, distributedTransactionConfiguration)+"/" + (String) ctx, 
+                                result, 
+                                ZooDefs.Ids.OPEN_ACL_UNSAFE, 
+                                CreateMode.PERSISTENT, 
+                                taskStatusCreateCallback, 
+                                result /* Resultado de la tarea actual */);
+                            
+                        // Eliminar asignacion
+                        zkc.zk.delete(
+                                WorkerZnodes.ASSIGN_NAMESPACE.getPath(workerScheduleConf, distributedTransactionConfiguration) + "/"  + workerId + "/" + (String) ctx, 
+                                -1, 
+                                taskVoidCallback, 
+                                null);
+
                     }
                 }.init(data, ctx));
                 
@@ -381,7 +397,7 @@ public class XATransactionResource implements Watcher{
      */
     AsyncCallback.StringCallback taskStatusCreateCallback = new AsyncCallback.StringCallback() {
         @Override
-        public void processResult(int rc, String path, Object ctx /* Nombre de la tarea */, String name) {
+        public void processResult(int rc, String path, Object ctx /* byte [] Data */, String name) {
             switch(KeeperException.Code.get(rc)) {
             case CONNECTIONLOSS:
                 zkc.zk.create(
@@ -459,6 +475,14 @@ public class XATransactionResource implements Watcher{
             try{
                 zkc.zk.create(
                     WorkerZnodes.STATUS_NAMESPACE.getPath(wsc, dtc), 
+                    "Status namespace".getBytes(), 
+                    ZooDefs.Ids.OPEN_ACL_UNSAFE, 
+                    CreateMode.PERSISTENT);
+            }catch (KeeperException | InterruptedException ex){}
+            
+            try{
+                zkc.zk.create(
+                    WorkerZnodes.ROLLBACK_NAMESPACE.getPath(wsc, dtc), 
                     "Status namespace".getBytes(), 
                     ZooDefs.Ids.OPEN_ACL_UNSAFE, 
                     CreateMode.PERSISTENT);
