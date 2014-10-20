@@ -956,35 +956,6 @@ public class XATransactionCoordinator implements Watcher{
         }
     };
     
-    /*AsyncCallback.StringCallback assignTransactionCallback = new AsyncCallback.StringCallback() {
-
-        @Override
-        public void processResult(int rc, String path, Object ctx /* TransactionAssignmentCtx *//*, String name) {
-            TransactionAssignmentCtx taCtx = (TransactionAssignmentCtx) ctx;
-            
-            switch(KeeperException.Code.get(rc)) { 
-            case CONNECTIONLOSS:
-                createTransactionAssignment(path, taCtx);
-                
-                break;
-            case OK:
-                log.info("[" + masterId + "] Transaccion/Tarea asignada correctamente: " + name);
-                
-                // Una vez asignada la transaccion la eliminamos del TRANSACTION_NAMESPACE
-                deleteTransaction(taCtx);
-                
-                break;
-            case NODEEXISTS: 
-                log.warn("[" + masterId + "] Transaccion/Tarea ya asignada previamente.");
-                
-                break;
-            default:
-                log.error("[" + masterId + "] Error al asignar Transaccion/Tarea: ", 
-                        KeeperException.create(KeeperException.Code.get(rc), path));
-            }
-        }
-    };*/
-    
     void deleteTransaction(TransactionAssignmentCtx taCtx){
         zkc.zk.delete(
                 XATransactionClient.ClientZnodes.TRANSACTIONS_NAMESPACES.getPath(taCtx.clientId, distributedTransactionConf)+ "/" + taCtx.transaction,
@@ -1099,10 +1070,6 @@ public class XATransactionCoordinator implements Watcher{
                     
                     if(workerScheduleOrder.size() - 1 > currentScheduleIndex){// Hay un siguiente Worker en el Schedule
                         assignTasks(toProcess, currentScheduleIndex);
-                    }else if(workerScheduleOrder.size() == currentScheduleIndex){// No hay mas Workers en el schedule
-                        // No hay mas workers en el schedule, el status de la tarea
-                        // ejecutada por el ultimo miembro del schedule es el 
-                        // resultado final de la transaccion
                     }
                     
                     for (String child : toProcess) 
@@ -1174,16 +1141,23 @@ public class XATransactionCoordinator implements Watcher{
                     JSONObject metadata = xatJsonInterpreter.getMetadata();
                     byte [] result = xatJsonInterpreter.getData();
                     
-                    String clientId = metadata.get(XATransactionUtils.AssignMetadataNodes.CLIENT_ID_CHILD.getNode()).toString();
+                    // Si hubo un error en la ejecucion de la transaccion en este punto
+                    // se debe hacer rollback a la transaccion
+                    if(xatJsonInterpreter.isError()){
+                        log.debug("[" + masterId + "] El worker respondio con error " + path);
+                        
+                    }else {// Si la ejecucion por parte del worker es exitosa, enviar resultado al cliente
+                        String clientId = metadata.get(XATransactionUtils.AssignMetadataNodes.CLIENT_ID_CHILD.getNode()).toString();
                                 
-                    // Crea un znode para notificar resultado de la transaccion al cliente
-                    zkc.zk.create(
-                        XATransactionClient.ClientZnodes.RESULTS_NAMESPACES.getPath(clientId, distributedTransactionConf) + "/" + taCtx.task, 
-                        result, 
-                        ZooDefs.Ids.OPEN_ACL_UNSAFE, 
-                        CreateMode.PERSISTENT, 
-                        resultCreateCallback, 
-                        taCtx /* TaskAssignmentCtx */);
+                        // Crea un znode para notificar resultado de la transaccion al cliente
+                        zkc.zk.create(
+                            XATransactionClient.ClientZnodes.RESULTS_NAMESPACES.getPath(clientId, distributedTransactionConf) + "/" + taCtx.task, 
+                            result, 
+                            ZooDefs.Ids.OPEN_ACL_UNSAFE, 
+                            CreateMode.PERSISTENT, 
+                            resultCreateCallback, 
+                            taCtx /* TaskAssignmentCtx */);
+                    }
                 } catch (ParseException ex) {
                     ex.printStackTrace();
                 }
@@ -1216,7 +1190,8 @@ public class XATransactionCoordinator implements Watcher{
             case OK:
                 log.info("[" + masterId + "] Resultado de transaccion creado correctamente: " + name);
                 
-                deleteStatus(taCtx);
+                //deleteStatus(taCtx);
+                clearTransactionData(taCtx);
                 break;
             case NODEEXISTS:
                 log.warn("[" + masterId + "] Resultado de transaccion ya existe o creado previamente: " + path);
@@ -1227,6 +1202,56 @@ public class XATransactionCoordinator implements Watcher{
         }
     };
     
+    /*
+     * Eliminar el status del ultimo worker del schedule procesado exitosamente
+     * tambien eliminar los znode creados para rollback ya q no son necesarios mas
+     */
+    void clearTransactionData(TaskAssignmentCtx taCtx){
+        Transaction transaction = zkc.zk.transaction();
+        
+        // Eliminar status creado por el ultimo worker schedule
+        transaction.delete(
+                XATransactionResource.WorkerZnodes.STATUS_NAMESPACE.getPath(taCtx.wsc, distributedTransactionConf) + "/" + taCtx.task,
+                -1);
+        
+        // Eliminar znodes creados para rollback
+        for(XATransactionsBuilder.WorkerScheduleConfiguration wsc : distributedTransactionConf.getWorkersScheduleConfigurations()){
+            String rollbackPath = XATransactionResource.WorkerZnodes.ROLLBACK_NAMESPACE.getPath(wsc, distributedTransactionConf) + "/" + taCtx.task;
+            
+            transaction.delete(
+                    rollbackPath, 
+                    -1);
+        }
+        
+        transaction.commit(clearTransactionCallback, taCtx);
+    }
+    
+    AsyncCallback.MultiCallback clearTransactionCallback = new AsyncCallback.MultiCallback() {
+
+        @Override
+        public void processResult(int rc, String path, Object ctx, List<OpResult> opResults) {            
+            TaskAssignmentCtx taCtx = (TaskAssignmentCtx) ctx;
+            
+            switch(KeeperException.Code.get(rc)) { 
+            case CONNECTIONLOSS:
+                log.warn("[" + masterId + "] Conexion perdida al hacer clear de la transaccion.");
+                clearTransactionData(taCtx);
+                
+                break;
+            case OK:
+                log.info("[" + masterId + "] Clear de la transaccion realizado correctamente.");
+                
+                break;
+            case NONODE: 
+                log.warn("[" + masterId + "] Transaccion ya hecha clear previamente ");
+                
+                break;
+            default:
+                log.error("[" + masterId + "] Error al hacer clear de la transaccion ", 
+                        KeeperException.create(KeeperException.Code.get(rc), path));
+            }
+        }
+    };
     
     /*
      * Asignar lista de tareas para ser ejecutadas por el siguiente WorkerSchedule
@@ -1268,37 +1293,52 @@ public class XATransactionCoordinator implements Watcher{
                 getTaskData(task, (int) ctx);
                 break;
             case OK:
-                // Debe haber almenos 1 worker del cual elegir en el siguiente worker schedule
-                // La transaccion inicia con los workers que tengan una posicion en el schedule = 0
-                int nextWorkerScheduleIndex = ((int) ctx) + 1;
-                XATransactionsBuilder.WorkerScheduleConfiguration nextWsc = workerScheduleOrder.get(nextWorkerScheduleIndex);
                 
-                if(workersCache.get(nextWsc).getList() != null && workersCache.get(nextWsc).getList().size() > 0){
-                    // Elegir un worker randomicamente
-                    List<String> list = workersCache.get(nextWsc).getList();
-                    String designatedWorker = list.get(random.nextInt(list.size()));
-
-                    // Path del znode para asignar la tarea al worker elegido
-                    String assignmentPath = XATransactionResource.WorkerZnodes.ASSIGN_NAMESPACE.getPath(nextWsc, distributedTransactionConf)+ 
-                            "/" +
-                            designatedWorker + 
-                            "/" + 
-                            task;
-
-                    // Path del znode para crear nodo de rollback
-                    String rollbackPath = XATransactionResource.WorkerZnodes.ROLLBACK_NAMESPACE.getPath(nextWsc, distributedTransactionConf)+ 
-                            "/" +
-                            task;
+                XATransactionJSONInterpreter xatJsonInterpreter;
+                try {
+                    xatJsonInterpreter = new XATransactionJSONInterpreter(data);
                     
-                    log.info("[" + masterId + "] Asignando tarea  [" + task + "], path: " + assignmentPath);
-                    log.info("[" + masterId + "] Creando rollback [" + task + "], path: " + rollbackPath);
-                    
-                    TaskAssignmentCtx taCtx = new TaskAssignmentCtx(wsc, nextWsc, designatedWorker, task, data);
-                    createAssignment(assignmentPath, rollbackPath, taCtx);
-                }else{
-                    // Si no hay workers detectados aun, volver a intentar asignar la tarea
-                    getTaskData(task, (int) ctx);
+                    // Si hubo un error en la ejecucion de la transaccion en este punto
+                    // se debe hacer un rollback en la transaccion
+                    if(xatJsonInterpreter.isError())
+                        log.debug("[" + masterId + "] El worker respondio con error " + path);
+                    else {// Si la ejecucion por parte del worker es exitosa, continuar con el siguiente worker en el schedule
+                        // Debe haber almenos 1 worker del cual elegir en el siguiente worker schedule
+                        // La transaccion inicia con los workers que tengan una posicion en el schedule = 0
+                        int nextWorkerScheduleIndex = ((int) ctx) + 1;
+                        XATransactionsBuilder.WorkerScheduleConfiguration nextWsc = workerScheduleOrder.get(nextWorkerScheduleIndex);
+
+                        if(workersCache.get(nextWsc).getList() != null && workersCache.get(nextWsc).getList().size() > 0){
+                            // Elegir un worker randomicamente
+                            List<String> list = workersCache.get(nextWsc).getList();
+                            String designatedWorker = list.get(random.nextInt(list.size()));
+
+                            // Path del znode para asignar la tarea al worker elegido
+                            String assignmentPath = XATransactionResource.WorkerZnodes.ASSIGN_NAMESPACE.getPath(nextWsc, distributedTransactionConf)+ 
+                                    "/" +
+                                    designatedWorker + 
+                                    "/" + 
+                                    task;
+
+                            // Path del znode para crear nodo de rollback
+                            String rollbackPath = XATransactionResource.WorkerZnodes.ROLLBACK_NAMESPACE.getPath(nextWsc, distributedTransactionConf)+ 
+                                    "/" +
+                                    task;
+
+                            log.info("[" + masterId + "] Asignando tarea  [" + task + "], path: " + assignmentPath);
+                            log.info("[" + masterId + "] Creando rollback [" + task + "], path: " + rollbackPath);
+
+                            TaskAssignmentCtx taCtx = new TaskAssignmentCtx(wsc, nextWsc, designatedWorker, task, data);
+                            createAssignment(assignmentPath, rollbackPath, taCtx);
+                        }else{
+                            // Si no hay workers detectados aun, volver a intentar asignar la tarea
+                            getTaskData(task, (int) ctx);
+                        }
+                    }
+                } catch (ParseException ex) {
+                    ex.printStackTrace();
                 }
+                
                 break;
             default:
                 log.error("[" + masterId + "] Error al obtener datos de la tarea: ", 
@@ -1313,7 +1353,7 @@ public class XATransactionCoordinator implements Watcher{
     void createAssignment(String assignmentPath, String rollbackPath, TaskAssignmentCtx taCtx){
         Transaction transaction = zkc.zk.transaction();
         
-        // Creacion de asignacion
+        // CreTransaction acion de asignacion
         transaction.create(
                 assignmentPath, 
                 taCtx.data, 

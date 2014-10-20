@@ -17,10 +17,12 @@ public class SesionRedis extends AbstractXATransactionExecutable{
     private final static Logger log = Logger.getLogger(SesionRedis.class);
     
     @Override
-    public JSONObject execute(JSONObject dataJson) {
+    public JSONObject execute(JSONObject dataJson) throws Exception {
         String valorPrueba = dataJson.get("prueba").toString();
         dataJson.put("prueba", valorPrueba + "->sesion redis");
-            
+        
+        //if(true)
+        //    throw new Exception("Algo salio mal mijin.");
         return dataJson;
     }
 

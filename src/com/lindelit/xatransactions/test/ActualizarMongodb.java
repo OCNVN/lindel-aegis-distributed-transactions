@@ -20,8 +20,8 @@ public class ActualizarMongodb extends AbstractXATransactionExecutable{
         String valorPrueba = dataJson.get("prueba").toString();
         dataJson.put("prueba", valorPrueba + "->actualizar mongodb");
         
-        //if("prueba".compareTo("prueba") == 0)
-        //    throw new Exception("Se jodio pex");
+        //if(true)
+        //    throw new NullPointerException("Se jodio pex");
         
         return dataJson;
     }

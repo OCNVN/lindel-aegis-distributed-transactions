@@ -52,4 +52,13 @@ public class XATransactionJSONInterpreter {
         
         this.dataJson = dataJson;
     }
+    
+    public Boolean isError(){
+        JSONObject statusNode = (JSONObject) dataJson.get(XATransactionUtils.TransactionStatusNodes.XA_STATUS_NODE.getNode());
+        String status = statusNode.get(XATransactionUtils.TransactionStatusNodes.STATUS_CHILD.getNode()).toString();
+        
+        if(status.compareTo(XATransactionUtils.TransactionStatusNodes.STATUS_ERROR_VALUE_NODE.getNode()) == 0)
+           return true;
+        return false;
+    }
 }

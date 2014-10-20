@@ -39,7 +39,7 @@ public class PruebaXATransactionClient1 {
             client.submitTransaction("logeo", transaction.toJSONString(), transactionObject);
             
             try {
-                Thread.sleep(100);
+                Thread.sleep(25);
             } catch (InterruptedException ex) {
                 ex.printStackTrace();
             }
@@ -67,7 +67,7 @@ public class PruebaXATransactionClient1 {
         JSONObject task = generateTask();
         log.debug("TAREA JSON: " + task.toJSONString());
         
-        submitAutomaticTransactions(100, client, task);
+        submitAutomaticTransactions(1, client, task);
         
         Thread.sleep(150000);
         
