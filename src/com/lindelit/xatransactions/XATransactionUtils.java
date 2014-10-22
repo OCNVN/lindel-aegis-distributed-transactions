@@ -60,7 +60,8 @@ public class XATransactionUtils {
         
         // Valores que puede tomar el child status
         STATUS_SUCCESS_VALUE_NODE ("success"),
-        STATUS_ERROR_VALUE_NODE ("error");
+        STATUS_ERROR_VALUE_NODE ("error"),
+        STATUS_START_VALUE_NODE ("start");
         
         private final String node;
         TransactionStatusNodes(String node){

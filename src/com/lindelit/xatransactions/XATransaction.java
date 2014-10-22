@@ -4,6 +4,7 @@
  */
 package com.lindelit.xatransactions;
 
+import com.lindelit.xatransactions.coordinator.XATransactionCoordinator;
 import java.util.ArrayList;
 import org.apache.log4j.Logger;
 
@@ -48,16 +49,19 @@ public class XATransaction {
         log.debug("Replicas del master: " + distributedTransactionConf.getMasterReplicas());
         
         for (int i = 0; i < distributedTransactionConf.getMasterReplicas(); i++) {
-            log.debug("\t Replica: " + i);
+            log.info("Replica de Master: " + i);
             // Creacion de procesos master, Id generado a partir del ID de la transaccion
             // y el numero correspondiente a la replica creada
-            XATransactionCoordinator dtm = new XATransactionCoordinator(
+            XATransactionCoordinator xatCoordinator = new XATransactionCoordinator(
                     distributedTransactionConf, 
                     distributedTransactionConf.getId() + "-" + i);
-            dtm.init();
-            dtm.runForMaster();
             
-            mastersReplicas.add(dtm);
+            // Inicializar coordinador
+            xatCoordinator.init();
+            // Correr como master
+            xatCoordinator.runForMaster();
+            
+            mastersReplicas.add(xatCoordinator);
         }
     }
     
@@ -76,18 +80,19 @@ public class XATransaction {
             if(!wsc.isExternal()){
                 for (int i = 0; i < wsc.getParallelism(); i++) {
                     log.debug("\t Instancia: " + i);
-                    XATransactionResource dtw = new XATransactionResource(
+                    XATransactionResource xatResource = new XATransactionResource(
                             wsc, 
                             distributedTransactionConf,
                             wsc.getName() + "-" + (i + wsc.getIdOffset()));
 
-                    dtw.init();
+                    // Iniciar resource
+                    xatResource.init();
                     // Recursos necesarios en zookeeper
-                    dtw.bootstrap();
-                    // Registrar worker
-                    dtw.register();
+                    xatResource.bootstrap();
+                    // Registrar resource
+                    xatResource.register();
                     // Obtener tareas
-                    dtw.getTasks();
+                    xatResource.getTasks();
                 }
             }
         }

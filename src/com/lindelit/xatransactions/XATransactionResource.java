@@ -5,7 +5,7 @@
 package com.lindelit.xatransactions;
 
 import org.apache.log4j.Logger;
-import com.lindelit.xatransactions.XATransactionCoordinator.TransactionZnodes;
+import com.lindelit.xatransactions.coordinator.XATransactionCoordinator.TransactionZnodes;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -331,6 +331,7 @@ public class XATransactionResource implements Watcher{
                             
                             // Data para la ejecucion de la tarea
                             distributedTransactionExecutable.setData(data);
+                            
                             // Ejecucion de la tarea, logica del usuario
                             distributedTransactionExecutable.runExecute();
                             
@@ -341,7 +342,6 @@ public class XATransactionResource implements Watcher{
                             log.error("Error de ejecucion de tarea: " + ex.getMessage());
                             
                             errorMsg = ex.getMessage().toString();
-                            log.debug("");
                             flagEjecucionExitosa = false;
                         }
                         

@@ -61,4 +61,20 @@ public class XATransactionJSONInterpreter {
            return true;
         return false;
     }
+    
+    public void setSuccessStatus() throws ParseException{
+        JSONObject xaStatusNode = (JSONObject) dataJson.get(XATransactionUtils.TransactionStatusNodes.XA_STATUS_NODE.getNode());
+        xaStatusNode.put(XATransactionUtils.TransactionStatusNodes.STATUS_CHILD.getNode(), XATransactionUtils.TransactionStatusNodes.STATUS_SUCCESS_VALUE_NODE.getNode());
+        
+        setData(dataJson.toJSONString().getBytes());
+    }
+    
+    public void setErrorStatus(String mensaje) throws ParseException{
+        
+        JSONObject xaStatusNode = (JSONObject) dataJson.get(XATransactionUtils.TransactionStatusNodes.XA_STATUS_NODE.getNode());
+        xaStatusNode.put(XATransactionUtils.TransactionStatusNodes.STATUS_CHILD.getNode(), XATransactionUtils.TransactionStatusNodes.STATUS_ERROR_VALUE_NODE.getNode());
+        xaStatusNode.put(XATransactionUtils.TransactionStatusNodes.MESSAGE_CHILD.getNode(), mensaje);
+        
+        setData(dataJson.toJSONString().getBytes());
+    }
 }

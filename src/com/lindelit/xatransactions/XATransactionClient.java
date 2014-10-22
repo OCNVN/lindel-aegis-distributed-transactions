@@ -4,6 +4,7 @@
  */
 package com.lindelit.xatransactions;
 
+import com.lindelit.xatransactions.coordinator.XATransactionCoordinator;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;

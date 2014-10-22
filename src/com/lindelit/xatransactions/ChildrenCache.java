@@ -14,19 +14,19 @@ import java.util.List;
 public class ChildrenCache {
     protected List<String> children;
     
-    ChildrenCache() {
+    public ChildrenCache() {
         this.children = null;        
     }
     
-    ChildrenCache(List<String> children) {
+    public ChildrenCache(List<String> children) {
         this.children = children;        
     }
         
-    List<String> getList() {
+    public List<String> getList() {
         return children;
     }
         
-    List<String> addedAndSet( List<String> newChildren) {
+    public List<String> addedAndSet( List<String> newChildren) {
         ArrayList<String> diff = null;
         
         if(children == null) {
@@ -47,7 +47,7 @@ public class ChildrenCache {
         return diff;
     }
         
-    List<String> removedAndSet( List<String> newChildren) {
+    public List<String> removedAndSet( List<String> newChildren) {
         List<String> diff = null;
             
         if(children != null) {
@@ -66,7 +66,7 @@ public class ChildrenCache {
         return diff;
     }
     
-    List<String> onlyAdded( List<String> newChildren) {
+    public List<String> onlyAdded( List<String> newChildren) {
         ArrayList<String> diff = null;
         
         if(children == null) {
@@ -86,7 +86,7 @@ public class ChildrenCache {
         return diff;
     }
         
-    List<String> onlyRemoved( List<String> newChildren) {
+    public List<String> onlyRemoved( List<String> newChildren) {
         List<String> diff = new ArrayList<String>();
             
        if(children != null){
@@ -101,7 +101,7 @@ public class ChildrenCache {
         return diff;
     }
     
-    List<String> onlyAdd( List<String> newChildren) {
+    public List<String> onlyAdd( List<String> newChildren) {
         this.children = newChildren;
         
         return this.children;

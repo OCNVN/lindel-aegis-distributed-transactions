@@ -109,6 +109,14 @@ public class Bootstrap implements Watcher{
                 ZooDefs.Ids.OPEN_ACL_UNSAFE, 
                 CreateMode.PERSISTENT);
         }catch (KeeperException | InterruptedException ex){}
+        
+        try{
+            zkc.zk.create(
+                ApplicationZnodes.FAILED_NAMESPACE.getPath(), 
+                "Failed namespace".getBytes(), 
+                ZooDefs.Ids.OPEN_ACL_UNSAFE, 
+                CreateMode.PERSISTENT);
+        }catch (KeeperException | InterruptedException ex){}
     }
 
     @Override
@@ -129,6 +137,7 @@ public class Bootstrap implements Watcher{
         ASSIGNS_NAMESPACE   (APP_NAMESPACE.getPath() + "/assigns"),
         STATUS_NAMESPACE   (APP_NAMESPACE.getPath() + "/status"),
         ROLLBACK_NAMESPACE   (APP_NAMESPACE.getPath() + "/rollback"),
+        FAILED_NAMESPACE   (APP_NAMESPACE.getPath() + "/failed"),
         MASTERS_NAMESPACE   (APP_NAMESPACE.getPath() + "/masters");
 
         private final String path;
