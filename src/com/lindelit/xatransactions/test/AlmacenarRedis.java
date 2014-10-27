@@ -26,7 +26,7 @@ public class AlmacenarRedis extends AbstractXATransactionExecutable{
 
     @Override
     public JSONObject rollback(JSONObject dataJson) {
-        log.debug("DICE QUE HAGA ROLLBACK DE ALGO!");
+        log.debug("DICE QUE HAGA ROLLBACK DE ALGO! " + new  String(getData()));
         
         return dataJson;
     }

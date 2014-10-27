@@ -83,15 +83,27 @@ public abstract class AbstractXATransactionExecutable {
         xATransactionJSONInterpreter = new XATransactionJSONInterpreter(data);
     }
     
-    public JSONObject getMetadata() throws ParseException{
+    public JSONObject getMetadata() throws ParseException {
         return xATransactionJSONInterpreter.getMetadata();
     }
     
-    public void setSuccessStatus() throws ParseException{
+    public void setSuccessStatus() throws ParseException {
         xATransactionJSONInterpreter.setSuccessStatus();
     }
     
-    public void setErrorStatus(String mensaje) throws ParseException{
+    public void setErrorStatus(String mensaje) throws ParseException {
         xATransactionJSONInterpreter.setErrorStatus(mensaje);
+    }
+    
+    public Boolean isErrorStatus() {
+        return xATransactionJSONInterpreter.isErrorStatus();
+    }
+    
+    public Boolean isExecutionPhase() {
+        return xATransactionJSONInterpreter.isExecutionPhase();
+    }
+    
+    public Boolean isRollbackPhase() {
+        return xATransactionJSONInterpreter.isRollbackPhase();
     }
 }

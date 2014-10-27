@@ -20,15 +20,15 @@ public class ActualizarMongodb extends AbstractXATransactionExecutable{
         String valorPrueba = dataJson.get("prueba").toString();
         dataJson.put("prueba", valorPrueba + "->actualizar mongodb");
         
-        //if(true)
-            //throw new NullPointerException("Se jodio pex");
+        if(true)
+            throw new NullPointerException("Se jodio pex");
         
         return dataJson;
     }
 
     @Override
     public JSONObject rollback(JSONObject dataJson) {
-        log.debug("DICE QUE HAGA ROLLBACK DE ALGO!");
+        log.debug("DICE QUE HAGA ROLLBACK DE ALGO! " + new  String(getData()));
         
         return dataJson;
     }

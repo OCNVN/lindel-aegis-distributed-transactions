@@ -53,7 +53,7 @@ public class XATransactionJSONInterpreter {
         this.dataJson = dataJson;
     }
     
-    public Boolean isError(){
+    public Boolean isErrorStatus(){
         JSONObject statusNode = (JSONObject) dataJson.get(XATransactionUtils.TransactionStatusNodes.XA_STATUS_NODE.getNode());
         String status = statusNode.get(XATransactionUtils.TransactionStatusNodes.STATUS_CHILD.getNode()).toString();
         
@@ -76,5 +76,51 @@ public class XATransactionJSONInterpreter {
         xaStatusNode.put(XATransactionUtils.TransactionStatusNodes.MESSAGE_CHILD.getNode(), mensaje);
         
         setData(dataJson.toJSONString().getBytes());
+    }
+    
+    public void setExecutionPhase() throws ParseException{
+        dataJson.put(XATransactionUtils.TransactionPhaseNodes.XA_PHASE_NODE.getNode(), XATransactionUtils.TransactionPhaseNodes.PHASE_EXECUTION_VALUE_NODE.getNode());
+        
+        setData(dataJson.toJSONString().getBytes());
+    }
+    
+    public void setRollbackPhase() throws ParseException{
+        dataJson.put(XATransactionUtils.TransactionPhaseNodes.XA_PHASE_NODE.getNode(), XATransactionUtils.TransactionPhaseNodes.PHASE_ROLLBACK_VALUE_NODE.getNode());
+        
+        setData(dataJson.toJSONString().getBytes());
+    }
+    
+    public Integer getFailedWorkerScheduleIndex() throws ParseException{
+        JSONObject phaseNode = (JSONObject) dataJson.get(XATransactionUtils.TransactionPhaseNodes.XA_PHASE_NODE.getNode());
+        String workerScheduleIndex = phaseNode.get(XATransactionUtils.TransactionPhaseNodes.FAILED_WORKER_SCHEDULE_INDEX_CHILD.getNode()).toString();
+        
+        
+        return new Integer(workerScheduleIndex);
+    }
+    
+    public String getFailedWorkerSchedule() throws ParseException{
+        JSONObject phaseNode = (JSONObject) dataJson.get(XATransactionUtils.TransactionPhaseNodes.XA_PHASE_NODE.getNode());
+        String workerSchedule = phaseNode.get(XATransactionUtils.TransactionPhaseNodes.FAILED_WORKER_SCHEDULE_CHILD.getNode()).toString();
+        
+        
+        return workerSchedule;
+    }
+    
+    public Boolean isExecutionPhase(){
+        JSONObject phaseNode = (JSONObject) dataJson.get(XATransactionUtils.TransactionPhaseNodes.XA_PHASE_NODE.getNode());
+        String phase = phaseNode.get(XATransactionUtils.TransactionPhaseNodes.PHASE_CHLD.getNode()).toString();
+        
+        if(phase.compareTo(XATransactionUtils.TransactionPhaseNodes.PHASE_EXECUTION_VALUE_NODE.getNode()) == 0)
+           return true;
+        return false;
+    }
+    
+    public Boolean isRollbackPhase(){
+        JSONObject phaseNode = (JSONObject) dataJson.get(XATransactionUtils.TransactionPhaseNodes.XA_PHASE_NODE.getNode());
+        String phase = phaseNode.get(XATransactionUtils.TransactionPhaseNodes.PHASE_CHLD.getNode()).toString();
+        
+        if(phase.compareTo(XATransactionUtils.TransactionPhaseNodes.PHASE_ROLLBACK_VALUE_NODE.getNode()) == 0)
+           return true;
+        return false;
     }
 }

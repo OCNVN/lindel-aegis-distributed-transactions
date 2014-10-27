@@ -332,14 +332,24 @@ public class XATransactionResource implements Watcher{
                             // Data para la ejecucion de la tarea
                             distributedTransactionExecutable.setData(data);
                             
-                            // Ejecucion de la tarea, logica del usuario
-                            distributedTransactionExecutable.runExecute();
+                            if(distributedTransactionExecutable.isExecutionPhase()){
+                                // Ejecucion de la tarea, logica del usuario
+                                log.info("[" + workerId + "] " + " Ejecutando tarea en fase de ejecucion ");
+                                distributedTransactionExecutable.runExecute();
+                            }else if(distributedTransactionExecutable.isRollbackPhase()){
+                                // Ejecucion de rollback
+                                log.info("[" + workerId + "] " + " Ejecutando tarea en fase de rollback ");
+                                distributedTransactionExecutable.runRollback();
+                            }else {
+                                log.fatal("[" + workerId + "] " + " LA TAREA NO CONTIENE FASE DE EJECUCION, IMPOSIBLE CONTINUAR");
+                            }
+                            
                             
                             flagEjecucionExitosa = true;
                         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException ex) {
                             ex.printStackTrace();
                         } catch (Exception ex){
-                            log.error("Error de ejecucion de tarea: " + ex.getMessage());
+                            log.error("[" + workerId + "] " + " Error de ejecucion de tarea: " + ex.getMessage());
                             
                             errorMsg = ex.getMessage().toString();
                             flagEjecucionExitosa = false;

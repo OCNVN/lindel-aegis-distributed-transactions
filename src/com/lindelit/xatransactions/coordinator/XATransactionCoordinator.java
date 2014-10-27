@@ -550,6 +550,9 @@ public class XATransactionCoordinator implements Watcher{
                     
                     // Agregar nodo de status a los datos
                     data = addTransactionStatus(data);
+                    
+                    // Agregar fase de la transaccion
+                    data = addTransactionPhase(data);
                     log.debug("ASIGNACION DATA METADATOS/STATUS: " + new String(data) + ", PATH: " + path);
                 } catch (ParseException ex) {
                     log.error("Error al agregar Metadatos/Status al data de transaccion: " + ex.getMessage());
@@ -626,6 +629,24 @@ public class XATransactionCoordinator implements Watcher{
         statusJsonChild.put(XATransactionUtils.TransactionStatusNodes.MESSAGE_CHILD.getNode(), "");
         
         dataJson.put(XATransactionUtils.TransactionStatusNodes.XA_STATUS_NODE.getNode(), statusJsonChild);
+        
+        return dataJson.toJSONString().getBytes();
+    }
+    
+    /*
+     * Agrega Fase de ejecucion por default estamos en la fase de execution
+     */
+    protected byte[] addTransactionPhase(byte[] data) throws ParseException{
+        JSONParser parser=new JSONParser();
+        
+        String dataString = new String(data);
+        Object dataObject = parser.parse(dataString);
+        JSONObject dataJson = (JSONObject) dataObject;
+        
+        JSONObject phaseJsonChild = new JSONObject();
+        phaseJsonChild.put(XATransactionUtils.TransactionPhaseNodes.PHASE_CHLD.getNode(), XATransactionUtils.TransactionPhaseNodes.PHASE_EXECUTION_VALUE_NODE.getNode());
+        
+        dataJson.put(XATransactionUtils.TransactionPhaseNodes.XA_PHASE_NODE.getNode(), phaseJsonChild);
         
         return dataJson.toJSONString().getBytes();
     }

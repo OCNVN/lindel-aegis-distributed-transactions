@@ -174,9 +174,6 @@ class XATaskSubcoordinator {
         @Override
         public void processResult(int rc, String path, Object ctx /* TaskAssignmentCtx */, byte[] data, Stat stat) {
             TaskAssignmentCtx taCtx = (TaskAssignmentCtx) ctx;
-            //XATransactionsBuilder.WorkerScheduleConfiguration wsc = taCtx.wsc;
-            //String namespace = XATransactionResource.WorkerZnodes.STATUS_NAMESPACE.getPath(wsc, distributedTransactionConf);
-            //String task = path.substring(namespace.length() + 1);
             
             switch(KeeperException.Code.get(rc)){
             case CONNECTIONLOSS:
@@ -197,9 +194,10 @@ class XATaskSubcoordinator {
                     
                     // Si hubo un error en la ejecucion de la transaccion en este punto
                     // se debe hacer rollback a la transaccion
-                    if(xatJsonInterpreter.isError()){
+                    if(xatJsonInterpreter.isErrorStatus()){
                         log.debug("[" + xATransactionCoordinator.getMasterId() + "] El worker respondio con error " + path);
                         
+                        xATransactionCoordinator.xaRollbackSubcoordinator.createFailedTransaction(taCtx);
                     }else {// Si la ejecucion por parte del worker es exitosa, enviar resultado al cliente
                         String clientId = metadata.get(XATransactionUtils.AssignMetadataNodes.CLIENT_ID_CHILD.getNode()).toString();
                                 

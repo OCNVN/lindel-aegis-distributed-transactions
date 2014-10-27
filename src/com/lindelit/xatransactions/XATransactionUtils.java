@@ -71,4 +71,23 @@ public class XATransactionUtils {
             return node;
         }
     }
+    
+    public enum TransactionPhaseNodes {
+        XA_PHASE_NODE ("XA-TRANSACTION-PHASE"),
+        PHASE_CHLD ("phase"),
+        FAILED_WORKER_SCHEDULE_CHILD ("failed-worker-schedule"),
+        FAILED_WORKER_SCHEDULE_INDEX_CHILD ("failed-worker-schedule-index"),
+        
+        // Valores que puede tomar como fase
+        PHASE_EXECUTION_VALUE_NODE ("execution"),
+        PHASE_ROLLBACK_VALUE_NODE ("rollback");
+        
+        private final String node;
+        TransactionPhaseNodes(String node){
+            this.node = node;
+        }
+        public String getNode(){
+            return node;
+        }
+    }
 }

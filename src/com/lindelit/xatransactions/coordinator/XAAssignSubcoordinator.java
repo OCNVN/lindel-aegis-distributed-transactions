@@ -86,11 +86,11 @@ class XAAssignSubcoordinator {
                     
                     // Si hubo un error en la ejecucion de la transaccion en este punto
                     // se debe hacer un rollback en la transaccion
-                    if(xatJsonInterpreter.isError()){
+                    if(xatJsonInterpreter.isErrorStatus()){
                         log.debug("[" + xATransactionCoordinator.getMasterId() + "] El worker respondio con error " + path);
                         
                         TaskAssignmentCtx failedTaCtx = new TaskAssignmentCtx(wsc, null, null, task, data);
-                        createFailedTransaction(failedTaCtx);
+                        xATransactionCoordinator.xaRollbackSubcoordinator.createFailedTransaction(failedTaCtx);
                         // Creacion de znode de transaccion fallida en el namespace FAILED
                     }else {// Si la ejecucion por parte del worker es exitosa, continuar con el siguiente worker en el schedule
                         // Debe haber almenos 1 worker del cual elegir en el siguiente worker schedule
@@ -137,47 +137,6 @@ class XAAssignSubcoordinator {
         }
     };
     
-    /*
-     * Creacion de nodo de transaccion fallida
-     */
-    
-    void createFailedTransaction(TaskAssignmentCtx taCtx){
-        xATransactionCoordinator.zkc.zk.create(
-                XATransactionCoordinator.TransactionZnodes.FAILED_NAMESPACE.getPath(xATransactionCoordinator.getDistributedTransactionConf()) + "/" + taCtx.task, 
-                taCtx.data, 
-                ZooDefs.Ids.OPEN_ACL_UNSAFE,
-                CreateMode.PERSISTENT, 
-                failedTaskCallback, 
-                taCtx);
-    }
-    
-    AsyncCallback.StringCallback failedTaskCallback = new AsyncCallback.StringCallback() {
-
-        @Override
-        public void processResult(int rc, String path, Object ctx, String name) {
-            TaskAssignmentCtx taCtx = (TaskAssignmentCtx) ctx;
-            
-            switch(KeeperException.Code.get(rc)) { 
-            case CONNECTIONLOSS:
-                log.warn("[" + xATransactionCoordinator.getMasterId() + "] Conexion perdida al crear znode de transaccion fallida, intentando crear nuevamente: " + path);
-                
-                createFailedTransaction(taCtx);
-                
-                break;
-            case OK:
-                log.info("[" + xATransactionCoordinator.getMasterId() + "] Znode de transaccion fallida creado correctamente: " + path);
-                
-                break;
-            case NODEEXISTS: 
-                log.warn("[" + xATransactionCoordinator.getMasterId() + "] Znode de transaccion fallida ya existe o creado previamente: " + path);
-                
-                break;
-            default:
-                log.error("[" + xATransactionCoordinator.getMasterId() + "] Error al crear znode de transaccion fallida: ", 
-                        KeeperException.create(KeeperException.Code.get(rc), path));
-            }
-        }
-    };
     
     /*
      * Creacion de la asignacion
